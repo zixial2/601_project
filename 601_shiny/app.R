@@ -36,7 +36,38 @@ require(shinyWidgets)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  theme = shinytheme("cosmo"),
+  navbarPage(
+    # Application title
+    title="Bike Sharing in Washington DC",
+    tabPanel("About", sidebarPanel(h3("Introduction:"), textOutput("intro")),
+             "Designed by: Risberg"),
+    
+    tabPanel("Explore all Stations"),
+    
+    tabPanel("Predict Bikes", 
+             sidebarPanel(
+               # Add user inputs here
+               
+               actionButton(inputId = "action", label = "Predict!")),
 
+             
+             mainPanel(h3("Predicted Number of Bikes"),
+                        verbatimTextOutput("bikes"),
+                        h3("Map showing nearest 3 stations"),
+                        verbatimTextOutput("Map1"))),
+    
+    tabPanel("Potential Rush Hours"),
+    tabPanel("Heatmap",
+             fluidRow(
+               column(2,checkboxInput("c1","Bike Heatmap"),
+                      checkboxInput("c2","List Top 10 Stations"))),
+             leafletOutput("pic1",width="60%",height="750px")
+             
+    )
+    
+  )
+  
 )
 
 # Define server logic required to draw a histogram
