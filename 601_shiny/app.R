@@ -34,6 +34,7 @@ require(stringr)
 require("rbokeh")
 require(shinyWidgets)
 library("jsonlite")
+
 # Define UI for application that draws a histogram
 
 
@@ -103,7 +104,7 @@ server <- function(input, output) {
   output$graph=renderRbokeh({
     suppressWarnings(figure(width = 800, height = 450, padding_factor = 0,
                             xlim = range(real_data$lon),ylim = range(real_data$lat)) %>%
-                       ly_map("county", "washington",col = 'indigo') %>%
+                       ly_map("state",col = 'gray') %>%
                        ly_points(lon, lat, data =real_data, size = 6,
                                  hover =input$picker)%>%
                        x_axis(visible = T) %>%
