@@ -57,7 +57,8 @@ ui <- fluidPage(
     # Application title
     title="Bike Sharing in Washington DC",
     tabPanel("About", sidebarPanel(h3("Introduction:"), textOutput("intro")),
-             "Designed by: Risberg"),
+             "Designed by: Risberg(Yixuan Luo, Zixia Luan, Steve Kim, Jie Luo)",
+             mainPanel(img(src='Bike1.png', width=800, height=550))),
     # second tab
     tabPanel("Explore all Stations",
              sidebarPanel("Choose Interested Information:",

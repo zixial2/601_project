@@ -1,0 +1,12 @@
+name: 601_shiny
+title: 601_shiny
+username:
+account: zixial2
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3262517
+bundleId: 3883242
+url: https://zixial2.shinyapps.io/601_shiny/
+when: 1605842747.01427
+asMultiple: FALSE
+asStatic: FALSE
