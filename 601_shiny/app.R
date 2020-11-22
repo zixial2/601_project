@@ -51,12 +51,16 @@ a$station_id = as.character(a$station_id)
 real$station_id = as.character(real$station_id)
 real_data = na.omit(left_join(real,a,"station_id"))
 
+full_20 = read.csv("./data/bikes_2020_full.csv") %>% dplyr::filter(Month<=10) %>% na.omit()
+full_19 = read.csv("./data/bike_2019_full.csv") %>% na.omit()
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
   navbarPage(
     # Application title
     title="Bike Sharing in Washington DC",
-    tabPanel("About", sidebarPanel(h3("Introduction:"), textOutput("intro")),
+    tabPanel("About", sidebarPanel(
+      
+      h3("Introduction:"), textOutput("intro")),
              "Designed by: Risberg(Yixuan Luo, Zixia Luan, Steve Kim, Jie Luo)",
              mainPanel(img(src='Bike1.png', width=800, height=550))),
     # second tab
@@ -81,7 +85,25 @@ ui <- fluidPage(
                        h3("Map showing nearest 3 stations"),
                        verbatimTextOutput("Map1"))),
     
-    tabPanel("Potential Rush Hours"),
+    tabPanel("Potential Rush Hours",
+             sidebarPanel("Popular Times",
+                          
+                          selectInput("dataset", "Choose a Period:",
+                                      choices = c("Covid Days", "Usual Days")),
+                          
+                          actionButton("update", "Update Period"),
+                          
+                          helpText("Note: click to view the updates whenever you choose a new model."),
+                          selectInput("Station", "Choose a Station:",
+                                      choices = levels(full_20$Start.station)),
+                          
+                          selectInput("Month", "Choose a Month:",
+                                      choices = levels(as.factor(full_20$Month))),
+                          
+                          selectInput("Weekend", "Is it a Weekend?",
+                                      choices = c("Yes", "No"))
+             ),
+             mainPanel(plotOutput("graph4"))),
     tabPanel("Heatmap",
              fluidRow(
                column(2,checkboxInput("c1","Bike Heatmap"),
@@ -110,6 +132,24 @@ server <- function(input, output) {
                                  hover =input$picker)%>%
                        x_axis(visible = T) %>%
                        y_axis(visible = T))
+  })
+  
+  datasetInput <- eventReactive(input$update, {
+    switch(input$dataset,
+           "Usual Days" = full_20,
+           "Covid Days" = full_19
+    )
+  }, ignoreNULL = FALSE)
+  
+  
+  output$graph4 <- renderPlot({
+    dataset <- datasetInput() %>%
+      mutate(Weekend = ifelse(Weekend == 1, "Yes", "No")) %>%
+      mutate(Holiday = ifelse(Holiday == 1, "Yes", "No")) %>%
+      filter(Start.station == input$Station | End.station == input$Station) %>%
+      filter(Month == input$Month) %>%
+      filter(Weekend == input$Weekend) 
+    hist(dataset$Hour, main = "Popular Times", ylab = "Number of Flows", xlab = "Hours")
   })
   
   
