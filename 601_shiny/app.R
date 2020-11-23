@@ -60,7 +60,7 @@ ui <- fluidPage(
     title="Bike Sharing in Washington DC",
     tabPanel("About", sidebarPanel(
       
-      h3("Introduction:"), textOutput("intro")),
+      h3("Welcome to Bike Sharing"), htmlOutput("intro")),
              "Designed by: Risberg(Yixuan Luo, Zixia Luan, Steve Kim, Jie Luo)",
              mainPanel(img(src='Bike1.png', width=800, height=550))),
     # second tab
@@ -119,8 +119,18 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   # first tab
-  output$intro= renderText(
-    "Our topic is about: ")
+  output$intro= renderText({
+    mylist <- c("<B>This app helps you check the information for each bike station</B>", 
+                " ",
+                "<B>How it works:</B>", 
+                " ",
+                "<B>Explore all stations</B>: Interactive map showing selective information from real-time data (Station name, available docks, etc).",
+                " ",
+                "<B>Predict Bikes</B>: The number of available bikes in station chosen by users using our predicting models.",
+                " ",
+                "<B>Potential rush hours</B>: Popular time during the day in station selected by users")
+    paste(mylist, collapse = "<br>")
+  })
   
   
   # second tab: 
