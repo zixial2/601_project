@@ -51,8 +51,8 @@ a$station_id = as.character(a$station_id)
 real$station_id = as.character(real$station_id)
 real_data = na.omit(left_join(real,a,"station_id"))
 
-full_20 = read.csv("./data/bikes_2020_full.csv") %>% dplyr::filter(Month<=10) %>% na.omit()
-full_19 = read.csv("./data/bike_2019_full.csv") %>% na.omit()
+full_20 = read.csv("C:/Users/EugLu/Desktop/bikes_2020_full.csv") %>% dplyr::filter(Month<=10) %>% na.omit()
+full_19 = read.csv("C:/Users/EugLu/Desktop/bike_2019_full.csv") %>% na.omit()
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
   navbarPage(
@@ -63,6 +63,7 @@ ui <- fluidPage(
       h3("Welcome to Bike Sharing"), htmlOutput("intro")),
              "Designed by: Risberg(Yixuan Luo, Zixia Luan, Steve Kim, Jie Luo)",
              mainPanel(img(src='Bike1.png', width=800, height=550))),
+    
     # second tab
     tabPanel("Explore all Stations",
              sidebarPanel("Choose Interested Information:",
@@ -76,6 +77,23 @@ ui <- fluidPage(
     tabPanel("Predict Bikes", 
              sidebarPanel(
                # Add user inputs here
+               selectInput("sta", "Choose a Station:",
+                           choices = levels(as.factor(full_20$Start.station)), selected ="10th St & Constitution Ave NW"),
+               
+               selectInput("mon", "Choose a Month:",
+                           choices = levels(as.factor(full_20$Month)),selected = "1"),
+               
+               selectInput("day", "Choose a Day:",
+                           choices = levels(as.factor(full_20$Day)),selected="1"),
+               
+               selectInput("hour", "Choose an Hour:",
+                           choices = levels(as.factor(full_20$Hour)),selected = "1"),
+               
+               selectInput("week", "Is it a Weekend?",
+                           choices = c("Yes", "No")),
+               
+               selectInput("holi", "Is it a Holiday?",
+                           choices = c("Yes", "No")),
                
                actionButton(inputId = "action", label = "Predict!")),
              
@@ -95,7 +113,7 @@ ui <- fluidPage(
                           
                           helpText("Note: click to view the updates whenever you choose a new model."),
                           selectInput("Station", "Choose a Station:",
-                                      choices = levels(full_20$Start.station)),
+                                      choices = levels(as.factor(full_20$Start.station))),
                           
                           selectInput("Month", "Choose a Month:",
                                       choices = levels(as.factor(full_20$Month))),
@@ -162,6 +180,60 @@ server <- function(input, output) {
     hist(dataset$Hour, main = "Popular Times", ylab = "Number of Flows", xlab = "Hours")
   })
   
+  # Number of predict bike
+  output$bikes <- renderText({
+    station_info <- full_20 %>%
+      filter(Start.station == as.character(input$sta) | 
+               End.station == as.character(input$sta))
+    
+    station_info$flow = with(station_info, 
+                             ifelse(Start.station == as.character(input$sta), 
+                                    -1, 1)) 
+    
+    station_info <- station_info %>%
+      group_by(Month, Day, Hour) %>%
+      mutate(n = sum(flow)) %>%
+      select(Month, Day, Hour, Weekend, Holiday, n) %>%
+      distinct()
+    
+    initial_number <- real_data %>%
+      filter(name == as.character(input$sta)) %>%
+      select(capacity) %>%
+      as.numeric()
+    
+    station_data <- station_info %>%
+      group_by(Month, Day) %>%
+      mutate(n = ifelse(row_number()==1, n + 0.4*initial_number, n)) %>%
+      mutate(cumsum = cumsum(n)) %>%
+      na.omit()
+    
+    model <- lm(cumsum ~  Day + Weekend + Holiday + as.factor(Month) + as.factor(Hour), data = station_data)
+    
+    coe <- data.frame(model$coef)
+    
+    coe$value <- 0
+    
+    coe[1,2] = 1
+    coe[2,2] = as.numeric(input$day)
+    if (as.numeric(input$mon) != 1){
+      coe[as.numeric(input$mon)+3, 2] = 1
+    }
+    if (as.numeric(input$hour) !=0){
+      coe[as.numeric(input$hour)+13, 2] = 1
+    }  
+    if (as.character(input$week) == "Yes"){
+      coe[3,2] = 1
+    }
+    if (as.character(input$holi) == "Yes"){
+      coe[4,2] = 1
+    }
+    
+    num = 0
+    for (i in 1:length(coe)){
+      num = num + coe[i,1]*coe[i,2]
+    }
+    paste(round(num))
+  })
   
 }
 
