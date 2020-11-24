@@ -53,6 +53,7 @@ real_data = na.omit(left_join(real,a,"station_id"))
 
 
 # read data for model prediction and plot
+# For windows users, the path for data file might be something like c:\\User\\data\\xxx
 
 full_20 = read.csv("./data/bikes_2020_full.csv") %>% dplyr::filter(Month<=10) %>% na.omit()
 b = full_20%>% select(Start.station,Hour) %>% group_by(Start.station)%>%arrange(Start.station) %>%filter(Start.station!="")
@@ -88,7 +89,7 @@ ui <- fluidPage(
     tabPanel("Predict Bikes", 
              sidebarPanel(
                # Add user inputs here
-               pickerInput("sta", "Choose a Station:",  options = list(`live-search` = TRUE), choices = levels(c$Start.station),selected = "Columbus Circle / Union Station"),
+               pickerInput("sta", "Choose a Station:",  options = list(`live-search` = TRUE), choices = levels(as.factor(c$Start.station)),selected = "Columbus Circle / Union Station"),
                selectInput("mon", "Choose a Month:",
                            #choices = levels(as.factor(full_20$Month)),selected = "1"),
                            choices = c("1","2","3","4","5","6","7","8","9","10","11","12"),selected = "1"),
@@ -118,7 +119,7 @@ ui <- fluidPage(
                           
                           helpText("Note: click to view the updates."),
                           selectInput("Station", "Choose a Station:",
-                                      choices = levels(full_20$Start.station), selected = "Columbus Circle / Union Station"),
+                                      choices = levels(as.factor(full_20$Start.station)), selected = "Columbus Circle / Union Station"),
                           
                           selectInput("Month", "Choose a Month:",
                                       choices = levels(as.factor(full_20$Month)),selected = "1"),
@@ -143,7 +144,7 @@ server <- function(input, output) {
                 " ",
                 "<B>Explore all stations</B>: Interactive map showing selective information from real-time data (Station name, available docks, etc).",
                 " ",
-                "<B>Predict Bikes</B>: The number of available bikes in station chosen by users using our predicting models.",
+                "<B>Predict bikes</B>: The number of available bikes in station chosen by users using our predicting models.",
                 " ",
                 "<B>Potential rush hours</B>: Popular time during the day in station selected by users")
     paste(mylist, collapse = "<br>")
